@@ -8,6 +8,12 @@ import { Tarefa } from '../../../core/models/tarefa.model';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { Projeto } from '../../../core/models/projeto.model';
+import { ProjetoService } from '../../../core/services/projeto.service';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-tarefa-list',
@@ -18,36 +24,58 @@ import { CommonModule } from '@angular/common';
     MatPaginatorModule,
     MatIconModule,
     MatButtonModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatChipsModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './tarefa-list.component.html',
   styleUrls: ['./tarefa-list.component.scss']
 })
 export class TarefaListComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'titulo', 'status', 'acoes'];
+  displayedColumns: string[] = ['id', 'titulo', 'projeto', 'dataCriacao', 'status', 'acoes'];
   dataSource = new MatTableDataSource<Tarefa>([]);
   totalElements = 0;
   pageSize = 10;
+  loading = false;
+  projetos: Projeto[] = [];
+  selectedProjetoId?: number;
+  sortDir: 'asc' | 'desc' = 'desc';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private tarefaService: TarefaService,
+    private projetoService: ProjetoService,
     private snackBar: MatSnackBar,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    this.carregarProjetos();
     this.carregarTarefas();
   }
 
+  carregarProjetos(): void {
+    this.projetoService.listar().subscribe({
+      next: (ps) => this.projetos = ps,
+      error: () => this.snackBar.open('Erro ao carregar projetos', 'Fechar', { duration: 3000 })
+    });
+  }
+
   carregarTarefas(page: number = 0): void {
-    this.tarefaService.listar(page, this.pageSize).subscribe({
+    this.loading = true;
+    this.tarefaService.listar(page, this.pageSize, this.selectedProjetoId, 'dataCriacao', this.sortDir).subscribe({
       next: (response) => {
         this.dataSource.data = response.content;
         this.totalElements = response.totalElements;
+        this.loading = false;
       },
-      error: () => this.snackBar.open('Erro ao carregar tarefas', 'Fechar', { duration: 3000 })
+      error: () => {
+        this.loading = false;
+        this.snackBar.open('Erro ao carregar tarefas', 'Fechar', { duration: 3000 });
+      }
     });
   }
 
@@ -68,6 +96,17 @@ export class TarefaListComponent implements OnInit {
   }
 
   onPageChange(event: any): void {
+    this.pageSize = event.pageSize;
     this.carregarTarefas(event.pageIndex);
+  }
+
+  onProjetoChange(): void {
+    this.paginator.firstPage();
+    this.carregarTarefas(0);
+  }
+
+  onSortDirChange(): void {
+    this.paginator.firstPage();
+    this.carregarTarefas(0);
   }
 }
