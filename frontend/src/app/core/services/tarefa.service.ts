@@ -13,8 +13,8 @@ export class TarefaService {
 
   constructor(private http: HttpClient) {}
 
-  listar(page: number = 0, size: number = 10, idProjeto?: number): Observable<any> {
-    let params: any = { page, size };
+  listar(page: number = 0, size: number = 10, idProjeto?: number, sortBy: string = 'dataCriacao', sortDir: 'asc' | 'desc' = 'desc'): Observable<any> {
+    let params: any = { page, size, sortBy, sortDir };
     if (idProjeto) params.idProjeto = idProjeto;
     return this.http.get(`${this.apiUrl}`, { params });
   }

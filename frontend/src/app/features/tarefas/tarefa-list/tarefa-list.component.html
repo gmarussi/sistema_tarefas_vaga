@@ -1,7 +1,26 @@
 <div class="tarefa-container">
-  <h2>Lista de Tarefas</h2>
+  <div class="header">
+    <h2>Lista de Tarefas</h2>
+    <div class="actions">
+      <mat-form-field appearance="outline" class="filter">
+        <mat-label>Projeto</mat-label>
+        <mat-select [(value)]="selectedProjetoId" (selectionChange)="onProjetoChange()">
+          <mat-option [value]="undefined">Todos</mat-option>
+          <mat-option *ngFor="let p of projetos" [value]="p.id">{{ p.nome }}</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-  <button mat-raised-button color="primary" (click)="novaTarefa()">Nova Tarefa</button>
+      <mat-form-field appearance="outline" class="filter">
+        <mat-label>Ordenação</mat-label>
+        <mat-select [(value)]="sortDir" (selectionChange)="onSortDirChange()">
+          <mat-option value="desc">Mais recentes</mat-option>
+          <mat-option value="asc">Mais antigas</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" (click)="novaTarefa()">Nova Tarefa</button>
+    </div>
+  </div>
 
   <table mat-table [dataSource]="dataSource" class="mat-elevation-z2">
     <ng-container matColumnDef="id">
@@ -14,9 +33,27 @@
       <td mat-cell *matCellDef="let tarefa">{{ tarefa.titulo }}</td>
     </ng-container>
 
+    <ng-container matColumnDef="projeto">
+      <th mat-header-cell *matHeaderCellDef> Projeto </th>
+      <td mat-cell *matCellDef="let tarefa">{{ tarefa.nomeProjeto || '-' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="dataCriacao">
+      <th mat-header-cell *matHeaderCellDef> Data </th>
+      <td mat-cell *matCellDef="let tarefa">{{ tarefa.dataCriacao | date:'short' }}</td>
+    </ng-container>
+
     <ng-container matColumnDef="status">
       <th mat-header-cell *matHeaderCellDef> Status </th>
-      <td mat-cell *matCellDef="let tarefa">{{ tarefa.status || '-' }}</td>
+      <td mat-cell *matCellDef="let tarefa">
+        <mat-chip-set>
+          <mat-chip [ngClass]="{
+              'chip-open': tarefa.status === 'Aberta',
+              'chip-progress': tarefa.status === 'Em Progresso',
+              'chip-done': tarefa.status === 'Concluída'
+            }">{{ tarefa.status || '-' }}</mat-chip>
+        </mat-chip-set>
+      </td>
     </ng-container>
 
     <ng-container matColumnDef="acoes">
@@ -31,6 +68,10 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
+
+  <div class="loading" *ngIf="loading">
+    <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+  </div>
 
   <mat-paginator
     [length]="totalElements"

@@ -4,4 +4,6 @@ export interface Tarefa {
   descricao?: string;
   status?: string;
   idProjeto?: number;
+  dataCriacao?: string;
+  nomeProjeto?: string;
 }
