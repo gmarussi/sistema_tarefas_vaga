@@ -19,6 +19,25 @@ Frontend (porta 4200)
 - `npm start`
 - App: `http://localhost:4200`
 
+Testes automatizados
+- Escopo coberto (backend):
+  - Service
+    - `TarefaService`: salvar (feliz e projeto inexistente), excluir (feliz e inexistente), listar (com/sem filtro por projeto, ordenação e fallback de `sortBy`).
+    - `ProjetoService`: listarTodos.
+  - Controller (MockMvc)
+    - `TarefaController`:
+      - POST `/api/v1/tarefas`: 201 (Location + body), 400 (Bean Validation), 404 (`EntityNotFoundException`), 409 (`DataIntegrityViolationException`), 500 (erro genérico).
+      - GET `/api/v1/tarefas`: retorno paginado e delegação correta dos parâmetros.
+      - DELETE `/api/v1/tarefas/{id}`: 204 e 404 quando não existe.
+    - `ProjetoController`: GET `/api/v1/projetos` retorna lista.
+  - Tratamento de erros: validado via `GlobalExceptionHandler` e contrato `ErrorResponse` (campos como `status`, `mensagem`, `path`, `erros`, `detalhe`).
+
+Como executar os testes
+- Backend (na pasta `backend`): `mvn test`
+- A partir da raiz do repositório: `mvn -f backend/pom.xml test`
+- Executar um único teste: `mvn -f backend/pom.xml -Dtest=com.gmarussi.backend.controller.TarefaControllerTest test`
+- Relatórios: gerados em `backend/target/surefire-reports`.
+
 Funcionalidades implementadas
 - Tarefas
   - Listagem paginada com filtro por projeto e ordenação por data (asc/desc).
