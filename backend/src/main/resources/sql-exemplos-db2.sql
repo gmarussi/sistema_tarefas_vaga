@@ -1,0 +1,34 @@
+-- Exemplos SQL compatíveis com DB2 (H2 em MODE=DB2)
+
+-- 1) Paginação: tarefas mais recentes com OFFSET/FETCH
+SELECT
+  t.ID,
+  t.TITULO,
+  t.STATUS,
+  t.DATA_CRIACAO,
+  t.ID_PROJETO
+FROM TAREFA t
+ORDER BY t.DATA_CRIACAO DESC
+OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
+
+-- 2) JOIN entre TAREFA e PROJETO: listar tarefas com nome do projeto
+SELECT
+  t.ID,
+  t.TITULO,
+  t.STATUS,
+  t.DATA_CRIACAO,
+  p.NOME AS NOME_PROJETO
+FROM TAREFA t
+JOIN PROJETO p ON p.ID = t.ID_PROJETO
+WHERE p.NOME LIKE 'Projeto%'
+ORDER BY t.DATA_CRIACAO DESC
+FETCH FIRST 10 ROWS ONLY;
+
+-- 3) Agrupamento por STATUS: total de tarefas por status
+SELECT
+  COALESCE(t.STATUS, 'Sem Status') AS STATUS,
+  COUNT(*) AS TOTAL
+FROM TAREFA t
+GROUP BY t.STATUS
+ORDER BY TOTAL DESC;
+

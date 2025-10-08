@@ -33,15 +33,17 @@ public class TarefaController {
     }
 
     /**
-     * Lista tarefas com paginação, filtro por projeto e ordenação decrescente por data.
+     * Lista tarefas com paginação, filtro por projeto e ordenação por data.
      */
     @GetMapping
     public ResponseEntity<Page<TarefaResponse>> listar(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Long idProjeto) {
+            @RequestParam(required = false) Long idProjeto,
+            @RequestParam(defaultValue = "dataCriacao") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
 
-        var tarefas = tarefaService.listar(idProjeto, page, size);
+        var tarefas = tarefaService.listar(idProjeto, page, size, sortBy, sortDir);
         return ResponseEntity.ok(tarefas);
     }
 

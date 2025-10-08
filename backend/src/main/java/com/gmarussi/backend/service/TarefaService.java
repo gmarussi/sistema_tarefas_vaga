@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +46,16 @@ public class TarefaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TarefaResponse> listar(Long idProjeto, int page, int size) {
-        var pageable = PageRequest.of(page, size);
+    public Page<TarefaResponse> listar(Long idProjeto, int page, int size, String sortBy, String sortDir) {
+        String prop = (sortBy == null || sortBy.isBlank()) ? "dataCriacao" : sortBy;
+        if (!(prop.equals("dataCriacao") || prop.equals("titulo") || prop.equals("status") || prop.equals("id"))) {
+            prop = "dataCriacao";
+        }
+        Sort.Direction direction = ("asc".equalsIgnoreCase(sortDir)) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        var pageable = PageRequest.of(page, size, Sort.by(direction, prop));
         var tarefas = (idProjeto != null)
-                ? tarefaRepository.findByProjeto_IdOrderByDataCriacaoDesc(idProjeto, pageable)
-                : tarefaRepository.findAllByOrderByDataCriacaoDesc(pageable);
+                ? tarefaRepository.findByProjeto_Id(idProjeto, pageable)
+                : tarefaRepository.findAll(pageable);
 
         return tarefas.map(this::toResponse);
     }
